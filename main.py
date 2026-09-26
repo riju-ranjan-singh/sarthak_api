@@ -139,6 +139,20 @@ async def shopping_chat(
         "response": response_text
     }
 
+@app.post("/api/v1/recipe_chat")
+async def recipe_chat(
+    message: str = Form(""),
+    session_id: str = Form(...)
+):
+    from ai_provider import GeminiProvider
+    provider = GeminiProvider()
+    response_text = provider.recipe_chat(message=message)
+    
+    return {
+        "status": "success",
+        "response": response_text
+    }
+
 from pydantic import BaseModel
 
 class ChatRequest(BaseModel):

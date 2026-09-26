@@ -104,7 +104,6 @@ class GeminiProvider(AIProvider):
         contents = [prompt]
         
         if image_path:
-            # Note: For Gemini 1.5, we can upload file first.
             try:
                 uploaded_img = genai.upload_file(path=image_path)
                 contents.append(uploaded_img)
@@ -116,3 +115,15 @@ class GeminiProvider(AIProvider):
             return response.text
         except Exception as e:
             return f"I had some trouble searching for that right now. Error: {str(e)}"
+
+    def recipe_chat(self, message: str) -> str:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        prompt = "You are a master chef. Provide a step-by-step recipe in note format, just like a cook. Include ingredients with exact measurements, preparation steps, and cooking instructions. Be warm and encouraging. "
+        prompt += f"\nUser asks to cook: {message}"
+        
+        try:
+            response = model.generate_content(prompt)
+            return response.text
+        except Exception as e:
+            return f"My kitchen is a bit messy right now, I couldn't get that recipe. Error: {str(e)}"
