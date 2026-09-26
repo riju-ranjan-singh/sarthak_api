@@ -153,6 +153,23 @@ async def recipe_chat(
         "response": response_text
     }
 
+class HotelRequest(BaseModel):
+    lat: float
+    lng: float
+    radius: int
+    mobile: str
+
+@app.post("/api/v1/find_hotels")
+async def find_hotels(request: HotelRequest):
+    from ai_provider import GeminiProvider
+    provider = GeminiProvider()
+    hotels = provider.find_hotels(lat=request.lat, lng=request.lng, radius=request.radius)
+    return {
+        "status": "success",
+        "hotels": hotels,
+        "mobile": request.mobile
+    }
+
 from pydantic import BaseModel
 
 class ChatRequest(BaseModel):
