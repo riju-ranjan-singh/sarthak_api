@@ -20,6 +20,10 @@ class AIProvider(ABC):
     @abstractmethod
     def generate_travel_plan(self, details: dict) -> Dict[str, Any]:
         pass
+        
+    @abstractmethod
+    def shopping_chat(self, message: str, image_path: str = None) -> str:
+        pass
 
 class GeminiProvider(AIProvider):
     def analyze_media(self, audio_path: str, frames: List[str], intent: str = "general") -> Dict[str, Any]:
@@ -91,3 +95,24 @@ class GeminiProvider(AIProvider):
                 hotels=[], activities=[], prices=[details.get('budget')]
             ).model_dump()
 
+    def shopping_chat(self, message: str, image_path: str = None) -> str:
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        
+        prompt = "You are Sarthak, an expert AI personal shopper. Help the user find the best product at the best price online. Provide real links or estimated prices based on your knowledge. If they provided an image, describe what you see and find that exact item. "
+        prompt += f"User message: {message}"
+        
+        contents = [prompt]
+        
+        if image_path:
+            # Note: For Gemini 1.5, we can upload file first.
+            try:
+                uploaded_img = genai.upload_file(path=image_path)
+                contents.append(uploaded_img)
+            except Exception as e:
+                print(f"Error uploading image to Gemini: {e}")
+                
+        try:
+            response = model.generate_content(contents)
+            return response.text
+        except Exception as e:
+            return f"I had some trouble searching for that right now. Error: {str(e)}"

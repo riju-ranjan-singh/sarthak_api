@@ -115,6 +115,30 @@ async def plan_travel(
         "plan": plan_dict
     }
 
+@app.post("/api/v1/shopping_chat")
+async def shopping_chat(
+    message: str = Form(""),
+    session_id: str = Form(...),
+    file: Optional[UploadFile] = File(None)
+):
+    from ai_provider import GeminiProvider
+    
+    image_path = None
+    if file:
+        file_extension = os.path.splitext(file.filename)[1] if file.filename else ""
+        unique_filename = f"shop_{uuid4().hex}{file_extension}"
+        image_path = os.path.join(UPLOAD_DIR, unique_filename)
+        with open(image_path, "wb") as buffer:
+            shutil.copyfileobj(file.file, buffer)
+            
+    provider = GeminiProvider()
+    response_text = provider.shopping_chat(message=message, image_path=image_path)
+    
+    return {
+        "status": "success",
+        "response": response_text
+    }
+
 from pydantic import BaseModel
 
 class ChatRequest(BaseModel):
