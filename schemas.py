@@ -11,6 +11,14 @@ class BaseAnalysis(BaseModel):
     timestamps: List[str] = Field(default_factory=list, description="List of important timestamps in MM:SS - Description format.")
     verified_information: List[str] = Field(default_factory=list, description="Information independently checked through external web research.")
 
+class TravelPlanRequest(BaseModel):
+    origin: str
+    destination: str
+    date: str
+    duration: str
+    travelers: str
+    budget: str
+
 class GeneralAnalysis(BaseAnalysis):
     pass
 

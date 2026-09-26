@@ -75,6 +75,46 @@ async def analyze_media(
         "video_id": db_video.id
     }
 
+from schemas import TravelPlanRequest
+
+@app.post("/api/v1/plan_travel")
+async def plan_travel(
+    request: TravelPlanRequest,
+    session: AsyncSession = Depends(get_session)
+):
+    from models import Video, Analysis
+    from ai_provider import GeminiProvider
+    import json
+    
+    # 1. Ask Gemini to generate the plan
+    provider = GeminiProvider()
+    plan_dict = provider.generate_travel_plan(request.model_dump())
+    
+    # 2. Save a dummy Video and Analysis to DB so it shows in history
+    db_video = Video(
+        file_path="text_prompt",
+        original_filename=f"Trip to {request.destination}",
+        status="completed"
+    )
+    session.add(db_video)
+    await session.commit()
+    await session.refresh(db_video)
+    
+    db_analysis = Analysis(
+        video_id=db_video.id,
+        content_type="travel",
+        structured_data=json.dumps(plan_dict)
+    )
+    session.add(db_analysis)
+    await session.commit()
+    await session.refresh(db_analysis)
+    
+    return {
+        "status": "success",
+        "video_id": db_video.id,
+        "plan": plan_dict
+    }
+
 from pydantic import BaseModel
 
 class ChatRequest(BaseModel):
